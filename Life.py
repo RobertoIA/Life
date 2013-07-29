@@ -1,10 +1,11 @@
 from Tkinter import *
-from random import getrandbits
+from random import randint
 
 WIDTH = 500
 HEIGHT = 500
 CELL_SIZE = 4
-DELAY = 1000
+DELAY = 100
+CELL_DENSITY = 5
 
 
 class Board(Frame):
@@ -43,7 +44,7 @@ class Life(object):
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 self.cells[(x, y)] = False
-                if getrandbits(1) == 0:
+                if randint(1, 100) >= 100 - CELL_DENSITY:
                     self.cells[(x, y)] = True
 
         self.animate()
@@ -60,11 +61,63 @@ class Life(object):
                     self.board.draw_cell((x, y))
 
         self.parent.after(DELAY, self.animate)
+        self.parent.update()
 
     def game_of_life(self):
+        for x in range(0, WIDTH / CELL_SIZE):
+            for y in range(0, HEIGHT / CELL_SIZE):
+                neighbours = 0
+                # north
+                if y != 0:
+                    if self.cells[(x, y - 1)]:
+                        neighbours += 1
+                # north-east
+                if x < WIDTH / CELL_SIZE - 1 and y != 0:
+                    if self.cells[(x + 1, y - 1)]:
+                        neighbours += 1
+                # north-west
+                if x != 0 and y != 0:
+                    if self.cells[(x - 1, y - 1)]:
+                        neighbours += 1
+                # south
+                if y < HEIGHT / CELL_SIZE - 1:
+                    if self.cells[(x, y + 1)]:
+                        neighbours += 1
+                # south-east
+                if x < WIDTH / CELL_SIZE - 1 and y < HEIGHT / CELL_SIZE - 1:
+                    if self.cells[(x + 1, y + 1)]:
+                        neighbours += 1
+                # south-west
+                if x != 0 and y < HEIGHT / CELL_SIZE - 1:
+                    if self.cells[(x - 1, y + 1)]:
+                        neighbours += 1
+                # east
+                if x < WIDTH / CELL_SIZE - 1:
+                    if self.cells[(x + 1, y)]:
+                        neighbours += 1
+                # west
+                if x != 0:
+                    if self.cells[(x - 1, y)]:
+                        neighbours += 1
+
+                if self.cells[(x, y)]:
+                    # under-population
+                    if neighbours < 2:
+                        self.cells[(x, y)] = False
+                    # survival
+                    elif neighbours == 2 or neighbours == 3:
+                        pass
+                    # overcrowding
+                    else:
+                        self.cells[(x, y)] = False
+                else:
+                    # reproduction
+                    if neighbours == 3:
+                        self.cells[(x, y)] = True
+
         # TODO replace with game logic
-        if not (self.test_cell[0] + 1) * CELL_SIZE > WIDTH - CELL_SIZE:
-            self.test_cell = (self.test_cell[0] + 1, self.test_cell[1])
+        # if not (self.test_cell[0] + 1) * CELL_SIZE > WIDTH - CELL_SIZE:
+        #     self.test_cell = (self.test_cell[0] + 1, self.test_cell[1])
 
 if __name__ == "__main__":
     root = Tk()
