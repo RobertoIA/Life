@@ -1,11 +1,12 @@
 from Tkinter import *
 from random import randint
+import copy
 
 WIDTH = 300
 HEIGHT = 300
 CELL_SIZE = 4
 DELAY = 30
-CELL_DENSITY = 5
+CELL_DENSITY = 7
 
 
 class Board(Frame):
@@ -56,6 +57,7 @@ class Life(object):
         self.parent.after(DELAY, self.animate)
 
     def game_of_life(self):
+        new_cells = copy.deepcopy(self.cells)
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 neighbours = 0
@@ -95,20 +97,22 @@ class Life(object):
                 if self.cells[(x, y)]:
                     # under-population
                     if neighbours < 2:
-                        self.cells[(x, y)] = False
+                        new_cells[(x, y)] = False
                         self.board.turn_white((x, y))
                     # survival
                     elif neighbours == 2 or neighbours == 3:
                         pass
                     # overcrowding
                     else:
-                        self.cells[(x, y)] = False
+                        new_cells[(x, y)] = False
                         self.board.turn_white((x, y))
                 else:
                     # reproduction
                     if neighbours == 3:
-                        self.cells[(x, y)] = True
+                        new_cells[(x, y)] = True
                         self.board.turn_black((x, y))
+
+        self.cells = new_cells
 
 if __name__ == "__main__":
     root = Tk()
