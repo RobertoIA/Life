@@ -2,8 +2,8 @@ from Tkinter import *
 from random import randint
 import copy
 
-WIDTH = 300
-HEIGHT = 300
+WIDTH = 301
+HEIGHT = 301
 CELL_SIZE = 4
 DELAY = 30
 CELL_DENSITY = 7
@@ -17,15 +17,16 @@ class Board(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.canvas = Canvas(parent, width=WIDTH, height=HEIGHT, bd=-2)
-        self.canvas.grid(row=0, column=0)
+        self.canvas.grid(row=0, column=0, pady=(0, 12))
 
         self.automaton = StringVar()
         self.automaton.set("life")
-        self.life = Radiobutton(parent, text="Conway's game of life", variable=self.automaton, value="life")
-        self.life.grid(row=1, column=0, sticky=W)
+        self.life = Radiobutton(parent, text="Conway's game of life", variable=self.automaton, value="life",
+                                indicatoron=0)
+        self.life.grid(row=1, column=0, sticky=W + E)
 
-        self.seeds = Radiobutton(parent, text="Seeds", variable=self.automaton, value="seeds")
-        self.seeds.grid(row=2, column=0, sticky=W)
+        self.seeds = Radiobutton(parent, text="Seeds", variable=self.automaton, value="seeds", indicatoron=0)
+        self.seeds.grid(row=2, column=0, sticky=W + E)
 
     def draw_cell(self, position):
         # rectangle in x1 y1 x2 y2
@@ -148,6 +149,7 @@ class Life(object):
 if __name__ == "__main__":
     root = Tk()
     root.title("Life")
+    root.resizable(width=FALSE, height=FALSE)
     life = Life(root)
 
     root.mainloop()
