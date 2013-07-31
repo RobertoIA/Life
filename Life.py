@@ -4,7 +4,7 @@ import copy
 
 WIDTH = 401
 HEIGHT = 401
-CELL_SIZE = 4
+CELL_SIZE = 3
 DELAY = 10
 CELL_DENSITY = 7
 
@@ -35,13 +35,13 @@ class Board(Frame):
             column_state = list()
             for y in range(0, HEIGHT / CELL_SIZE):
                 if randint(1, 100) >= 100 - CELL_DENSITY:
-                    color = "black"
+                    status = NORMAL
                     column_state.append(1)
                 else:
-                    color = "white"
+                    status = HIDDEN
                     column_state.append(0)
                 column.append(self.canvas.create_rectangle(x * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE,
-                                                            (y + 1) * CELL_SIZE, fill=color))
+                                                            (y + 1) * CELL_SIZE, fill="black", state=status))
 
             self.cells.append(column)
             state.append(column_state)
@@ -55,13 +55,13 @@ class Board(Frame):
                     self.toggle_color(x, y)
 
     def get_state(self, x, y):
-        return self.canvas.itemcget(self.cells[x][y], "fill") == "black"
+        return self.canvas.itemcget(self.cells[x][y], "state") == NORMAL
 
     def toggle_color(self, x, y):
         if self.get_state(x, y):
-            self.canvas.itemconfigure(self.cells[x][y], fill="white")
+            self.canvas.itemconfigure(self.cells[x][y], state=HIDDEN)
         else:
-            self.canvas.itemconfigure(self.cells[x][y], fill="black")
+            self.canvas.itemconfigure(self.cells[x][y], state=NORMAL)
 
 
 class Life(object):
