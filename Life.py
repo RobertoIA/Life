@@ -40,13 +40,14 @@ class Board(Frame):
 
             self.cells.append(column)
 
-    def turn_white(self, x, y):
-        self.canvas.itemconfigure(self.cells[x][y], fill="white")
+    def get_state(self, x, y):
+        return self.canvas.itemcget(self.cells[x][y], "fill") == "black"
 
-    def turn_black(self, x, y):
-        self.canvas.itemconfigure(self.cells[x][y], fill="black")
-
-    #TODO en commit separado: get_color, toggle_color
+    def toggle_color(self, x, y):
+        if self.get_state(x, y):
+            self.canvas.itemconfigure(self.cells[x][y], fill="white")
+        else:
+            self.canvas.itemconfigure(self.cells[x][y], fill="black")
 
 
 class Life(object):
@@ -67,74 +68,69 @@ class Life(object):
         self.parent.after(DELAY, self.animate)
 
     def game_of_life(self):
-        canvas = self.board.canvas
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 neighbours = self.count_neighbours(x, y)
 
-                if canvas.itemcget(self.board.cells[x][y], "fill") == "black":
+                if self.board.get_state(x, y):
                     # under-population
                     if neighbours < 2:
-                        self.board.turn_white(x, y)
+                        self.board.toggle_color(x, y)
                     # survival
                     elif neighbours == 2 or neighbours == 3:
                         pass
                     # overcrowding
                     else:
-                        self.board.turn_white(x, y)
+                        self.board.toggle_color(x, y)
                 else:
                     # reproduction
                     if neighbours == 3:
-                        self.board.turn_black(x, y)
+                        self.board.toggle_color(x, y)
 
     def seeds(self):
-        canvas = self.board.canvas
-        new_cells = copy.deepcopy(self.board.cells)
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 neighbours = self.count_neighbours(x, y)
 
-                if canvas.itemcget(self.board.cells[x][y], "fill") == "white" and neighbours == 2:
-                    self.board.turn_black(x, y)
+                if not self.board.get_state(x, y) and neighbours == 2:
+                    self.board.toggle_color(x, y)
                 else:
-                    self.board.turn_white(x, y)
-
-        self.board.cells = new_cells
+                    self.board.toggle_color(x, y)
 
     def count_neighbours(self, x, y):
         canvas = self.board.canvas
         neighbours = 0
         # north
         if y != 0:
-            if canvas.itemcget(self.board.cells[x][y - 1], "fill") == "black":
+            if self.board.get_state(x, y - 1):
                 neighbours += 1
-            # north-east
+        # north-east
         if x < WIDTH / CELL_SIZE - 1 and y != 0:
-            if canvas.itemcget(self.board.cells[x + 1][y - 1], "fill") == "black":
+            if self.board.get_state(x + 1, y - 1):
                 neighbours += 1
-            # north-west
+        # north-west
         if x != 0 and y != 0:
-            if canvas.itemcget(self.board.cells[x - 1][y - 1], "fill") == "black":
+            if self.board.get_state(x - 1, y - 1):
                 neighbours += 1
-            # south
+        # south
         if y < HEIGHT / CELL_SIZE - 1:
-            if canvas.itemcget(self.board.cells[x][y + 1], "fill") == "black":
+            if self.board.get_state(x, y + 1):
                 neighbours += 1
-            # south-east
+        # south-east
         if x < WIDTH / CELL_SIZE - 1 and y < HEIGHT / CELL_SIZE - 1:
-            if canvas.itemcget(self.board.cells[x + 1][y + 1], "fill") == "black":
+            if self.board.get_state(x + 1, y + 1):
                 neighbours += 1
-            # south-west
+        # south-west
         if x != 0 and y < HEIGHT / CELL_SIZE - 1:
-            if canvas.itemcget(self.board.cells[x - 1][y + 1], "fill") == "black":
+            if self.board.get_state(x - 1, y + 1):
                 neighbours += 1
-            # east
+        # east
         if x < WIDTH / CELL_SIZE - 1:
-            if canvas.itemcget(self.board.cells[x + 1][y], "fill") == "black":
+            if self.board.get_state(x + 1, y):
                 neighbours += 1
-            # west
+        # west
         if x != 0:
-            if canvas.itemcget(self.board.cells[x - 1][y], "fill") == "black":
+            if self.board.get_state( - 1, y):
                 neighbours += 1
 
         return neighbours
