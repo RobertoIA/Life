@@ -29,16 +29,30 @@ class Board(Frame):
         self.seeds.grid(row=2, column=0, sticky=W + E)
 
     def init_cells(self):
+        state = list()
         for x in range(0, WIDTH / CELL_SIZE):
             column = list()
+            column_state = list()
             for y in range(0, HEIGHT / CELL_SIZE):
-                color = "white"
                 if randint(1, 100) >= 100 - CELL_DENSITY:
                     color = "black"
+                    column_state.append(1)
+                else:
+                    color = "white"
+                    column_state.append(0)
                 column.append(self.canvas.create_rectangle(x * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE,
                                                             (y + 1) * CELL_SIZE, fill=color))
 
             self.cells.append(column)
+            state.append(column_state)
+
+        return state
+
+    def update_cells(self, state):
+        for x in range(0, WIDTH / CELL_SIZE):
+            for y in range(0, HEIGHT / CELL_SIZE):
+                if state[x][y] != self.get_state(x, y):
+                    self.toggle_color(x, y)
 
     def get_state(self, x, y):
         return self.canvas.itemcget(self.cells[x][y], "fill") == "black"
@@ -53,10 +67,12 @@ class Board(Frame):
 class Life(object):
     """Main game loop."""
 
+    state = list()
+
     def __init__(self, parent):
         self.parent = parent
         self.board = Board(parent)
-        self.board.init_cells()
+        self.state = self.board.init_cells()
         self.animate()
 
     def animate(self):
@@ -65,72 +81,79 @@ class Life(object):
         elif self.board.automaton.get() == "seeds":
             self.seeds()
 
+        self.board.update_cells(self.state)
         self.parent.after(DELAY, self.animate)
 
     def game_of_life(self):
+        new_state = copy.deepcopy(self.state)
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 neighbours = self.count_neighbours(x, y)
 
-                if self.board.get_state(x, y):
+                if self.state[x][y]:
                     # under-population
                     if neighbours < 2:
-                        self.board.toggle_color(x, y)
+                        new_state[x][y] = not self.state[x][y]
                     # survival
                     elif neighbours == 2 or neighbours == 3:
                         pass
                     # overcrowding
                     else:
-                        self.board.toggle_color(x, y)
+                        new_state[x][y] = not self.state[x][y]
                 else:
                     # reproduction
                     if neighbours == 3:
-                        self.board.toggle_color(x, y)
+                        new_state[x][y] = not self.state[x][y]
+
+        self.state = new_state
 
     def seeds(self):
+        new_state = copy.deepcopy(self.state)
         for x in range(0, WIDTH / CELL_SIZE):
             for y in range(0, HEIGHT / CELL_SIZE):
                 neighbours = self.count_neighbours(x, y)
 
-                if not self.board.get_state(x, y) and neighbours == 2:
-                    self.board.toggle_color(x, y)
+                if not self.state[x][y] and neighbours == 2:
+                    new_state[x][y] = not self.state[x][y]
                 else:
-                    self.board.toggle_color(x, y)
+                    new_state[x][y] = 0
+
+        self.state = new_state
 
     def count_neighbours(self, x, y):
         canvas = self.board.canvas
         neighbours = 0
         # north
         if y != 0:
-            if self.board.get_state(x, y - 1):
+            if self.state[x][y - 1]:
                 neighbours += 1
         # north-east
         if x < WIDTH / CELL_SIZE - 1 and y != 0:
-            if self.board.get_state(x + 1, y - 1):
+            if self.state[x + 1][y - 1]:
                 neighbours += 1
         # north-west
         if x != 0 and y != 0:
-            if self.board.get_state(x - 1, y - 1):
+            if self.state[x - 1][y - 1]:
                 neighbours += 1
         # south
         if y < HEIGHT / CELL_SIZE - 1:
-            if self.board.get_state(x, y + 1):
+            if self.state[x][y + 1]:
                 neighbours += 1
         # south-east
         if x < WIDTH / CELL_SIZE - 1 and y < HEIGHT / CELL_SIZE - 1:
-            if self.board.get_state(x + 1, y + 1):
+            if self.state[x + 1][y + 1]:
                 neighbours += 1
         # south-west
         if x != 0 and y < HEIGHT / CELL_SIZE - 1:
-            if self.board.get_state(x - 1, y + 1):
+            if self.state[x - 1][y + 1]:
                 neighbours += 1
         # east
         if x < WIDTH / CELL_SIZE - 1:
-            if self.board.get_state(x + 1, y):
+            if self.state[x + 1][y]:
                 neighbours += 1
         # west
         if x != 0:
-            if self.board.get_state( - 1, y):
+            if self.state[x - 1][y]:
                 neighbours += 1
 
         return neighbours
