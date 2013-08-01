@@ -1,11 +1,10 @@
 from Tkinter import *
 from random import randint
-import copy
 
 # Width of the canvas, in pixels.
-WIDTH = 401
+WIDTH = 300
 # Height of the canvas, in pixels.
-HEIGHT = 401
+HEIGHT = 300
 # Size of each cells in pixels. Includes border (1px).
 CELL_SIZE = 3
 # Delay between 'ticks', in milliseconds.
@@ -29,11 +28,11 @@ class Board(Frame):
         Frame.__init__(self, parent)
 
         # Canvas
-        self.canvas = Canvas(parent, width=WIDTH, height=HEIGHT, bd=-2)
+        self.canvas = Canvas(parent, width=WIDTH, height=HEIGHT, bd=-2, background="white")
         self.canvas.grid(row=0, column=0, pady=(0, 12))
 
         self.automaton = StringVar()
-        self.automaton.set("life")  # Default.
+        self.automaton.set("pause")  # Default.
         # Conway's game of life button.
         self.life = Radiobutton(parent, text="Conway's game of life", variable=self.automaton, value="life",
                                 indicatoron=0)
@@ -41,6 +40,9 @@ class Board(Frame):
         # Seeds button.
         self.seeds = Radiobutton(parent, text="Seeds", variable=self.automaton, value="seeds", indicatoron=0)
         self.seeds.grid(row=2, column=0, sticky=W + E)
+        # Pause button
+        self.seeds = Radiobutton(parent, text="Pause", variable=self.automaton, value="pause", indicatoron=0)
+        self.seeds.grid(row=4, column=0, sticky=W + E, pady=(12, 0))
 
     def init_cells(self):
         """
@@ -48,24 +50,23 @@ class Board(Frame):
         Returns initial state of the board.
         """
         state = list()
-        for x in range(0, WIDTH / CELL_SIZE):
-            column = list()
-            column_state = list()
-            for y in range(0, HEIGHT / CELL_SIZE):
-                if randint(1, 100) >= 100 - CELL_DENSITY:
-                    # Live cell.
-                    status = NORMAL
-                    column_state.append(1)
-                else:
-                    # Dead cell.
-                    status = HIDDEN
-                    column_state.append(0)
-                column.append(self.canvas.create_rectangle(x * CELL_SIZE, y * CELL_SIZE, (x + 1) * CELL_SIZE,
-                                                           (y + 1) * CELL_SIZE, fill="black", state=status,
-                                                           outline="white"))
+        width = WIDTH / CELL_SIZE
+        height = HEIGHT / CELL_SIZE
 
-            self.cells.append(column)
-            state.append(column_state)
+        for index in range(0, width * height):
+            if randint(1, 100) >= 100 - CELL_DENSITY:
+                # Live cell.
+                status = NORMAL
+                state.append(1)
+            else:
+                # Dead cell.
+                status = HIDDEN
+                state.append(0)
+
+            cell = self.canvas.create_rectangle((index / width) * CELL_SIZE, (index % width) * CELL_SIZE,
+                                                ((index / width) + 1) * CELL_SIZE, ((index % width) + 1) * CELL_SIZE,
+                                                fill="black", state=status, outline="white")
+            self.cells.append(cell)
 
         return state
 
@@ -73,26 +74,28 @@ class Board(Frame):
         """
         Updates board to reflect a given state.
         """
-        for x in range(0, WIDTH / CELL_SIZE):
-            for y in range(0, HEIGHT / CELL_SIZE):
-                if state[x][y] != self.get_state(x, y):
-                    self.toggle_color(x, y)
+        width = WIDTH / CELL_SIZE
+        height = HEIGHT / CELL_SIZE
 
-    def get_state(self, x, y):
+        for index in range(0, width * height):
+            if state[index] != self.get_state(index):
+                self.toggle_color(index)
+
+    def get_state(self, index):
         """
         Returns the state of a given cell, True means alive, False means dead.
         """
-        return self.canvas.itemcget(self.cells[x][y], "state") == NORMAL
+        return self.canvas.itemcget(self.cells[index], "state") == NORMAL
 
-    def toggle_color(self, x, y):
+    def toggle_color(self, index):
         """
         Toggles the color of a cell, hiding or revealing it.
         Doesn't actually changes the fill attribute.
         """
-        if self.get_state(x, y):
-            self.canvas.itemconfigure(self.cells[x][y], state=HIDDEN)
+        if self.get_state(index):
+            self.canvas.itemconfigure(self.cells[index], state=HIDDEN)
         else:
-            self.canvas.itemconfigure(self.cells[x][y], state=NORMAL)
+            self.canvas.itemconfigure(self.cells[index], state=NORMAL)
 
 
 class Life(object):
@@ -120,6 +123,8 @@ class Life(object):
             self.game_of_life()
         elif self.board.automaton.get() == "seeds":
             self.seeds()
+        else:
+            pass
 
         self.board.update_cells(self.state)
         self.parent.after(DELAY, self.animate)
@@ -128,25 +133,27 @@ class Life(object):
         """
         Rules for Conway's game of life.
         """
-        new_state = copy.deepcopy(self.state)
-        for x in range(0, WIDTH / CELL_SIZE):
-            for y in range(0, HEIGHT / CELL_SIZE):
-                neighbours = self.count_neighbours(x, y)
+        new_state = self.state[:]
+        width = WIDTH / CELL_SIZE
+        height = HEIGHT / CELL_SIZE
 
-                if self.state[x][y]:
-                    # Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-                    if neighbours < 2:
-                        new_state[x][y] = not self.state[x][y]
-                    # Any live cell with two or three live neighbours lives on to the next generation.
-                    elif neighbours == 2 or neighbours == 3:
-                        pass
-                    # Any live cell with more than three live neighbours dies, as if by overcrowding.
-                    else:
-                        new_state[x][y] = not self.state[x][y]
+        for index in range(0, width * height):
+            neighbours = self.count_neighbours(index)
+
+            if self.state[index]:
+                # Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+                if neighbours < 2:
+                    new_state[index] = not self.state[index]
+                # Any live cell with two or three live neighbours lives on to the next generation.
+                elif neighbours == 2 or neighbours == 3:
+                    pass
+                # Any live cell with more than three live neighbours dies, as if by overcrowding.
                 else:
-                    # Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-                    if neighbours == 3:
-                        new_state[x][y] = not self.state[x][y]
+                    new_state[index] = not self.state[index]
+            else:
+                # Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+                if neighbours == 3:
+                    new_state[index] = not self.state[index]
 
         self.state = new_state
 
@@ -154,58 +161,65 @@ class Life(object):
         """
         Rules for Seeds.
         """
-        new_state = copy.deepcopy(self.state)
-        for x in range(0, WIDTH / CELL_SIZE):
-            for y in range(0, HEIGHT / CELL_SIZE):
-                neighbours = self.count_neighbours(x, y)
+        new_state = self.state[:]
+        width = WIDTH / CELL_SIZE
+        height = HEIGHT / CELL_SIZE
 
-                if not self.state[x][y] and neighbours == 2:
-                    # A dead cell is born if it had exactly two live neighbors.
-                    new_state[x][y] = not self.state[x][y]
-                else:
-                    # Every other cell dies.
-                    new_state[x][y] = 0
+        for index in range(0, width * height):
+            neighbours = self.count_neighbours(index)
+
+            if not self.state[index] and neighbours == 2:
+                # A dead cell is born if it had exactly two live neighbors.
+                new_state[index] = not self.state[index]
+            else:
+                # Every other cell dies.
+                new_state[index] = 0
 
         self.state = new_state
 
-    def count_neighbours(self, x, y):
+    def count_neighbours(self, index):
         """
         Counts alive cells in the Moore neighborhood of a cell.
         Returns the result.
         """
         canvas = self.board.canvas
+        width = WIDTH / CELL_SIZE
+        height = HEIGHT / CELL_SIZE
         neighbours = 0
+
+        x, y = (index / width), (index % width)  # Temporary crutch.
+
         # North.
-        if y != 0:
-            if self.state[x][y - 1]:
+        if index - width >= 0:
+            if self.state[index - width]:
                 neighbours += 1
         # North-east.
-        if x < WIDTH / CELL_SIZE - 1 and y != 0:
-            if self.state[x + 1][y - 1]:
+        if index - width + 1 >= 0:
+            if self.state[index - width + 1]:
                 neighbours += 1
         # North-west.
-        if x != 0 and y != 0:
-            if self.state[x - 1][y - 1]:
+        if index - width - 1 >= 0:
+            if self.state[index - width - 1]:
                 neighbours += 1
         # South.
-        if y < HEIGHT / CELL_SIZE - 1:
-            if self.state[x][y + 1]:
+        if index + width < height * width:
+            if self.state[index + width]:
                 neighbours += 1
         # South-east.
-        if x < WIDTH / CELL_SIZE - 1 and y < HEIGHT / CELL_SIZE - 1:
-            if self.state[x + 1][y + 1]:
+        if index + width + 1 < height * width:
+            if self.state[index + width + 1]:
                 neighbours += 1
         # South-west.
-        if x != 0 and y < HEIGHT / CELL_SIZE - 1:
-            if self.state[x - 1][y + 1]:
+        if index + width - 1 < height * width:
+            if self.state[index + width - 1]:
                 neighbours += 1
         # East.
-        if x < WIDTH / CELL_SIZE - 1:
-            if self.state[x + 1][y]:
+        if index + 1 < height * width:
+            if self.state[index + 1]:
                 neighbours += 1
         # West.
-        if x != 0:
-            if self.state[x - 1][y]:
+        if index - 1 >= 0:
+            if self.state[index - 1]:
                 neighbours += 1
 
         return neighbours
