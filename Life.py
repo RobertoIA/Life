@@ -191,36 +191,28 @@ class Life(object):
 
         # North.
         if index - width >= 0:
-            if self.state[index - width]:
-                neighbours += 1
+            neighbours += self.state[index - width]
         # North-east.
         if index - width + 1 >= 0:
-            if self.state[index - width + 1]:
-                neighbours += 1
+            neighbours += self.state[index - width + 1]
         # North-west.
         if index - width - 1 >= 0:
-            if self.state[index - width - 1]:
-                neighbours += 1
+            neighbours += self.state[index - width - 1]
         # South.
         if index + width < height * width:
-            if self.state[index + width]:
-                neighbours += 1
+            neighbours += self.state[index + width]
         # South-east.
         if index + width + 1 < height * width:
-            if self.state[index + width + 1]:
-                neighbours += 1
+            neighbours += self.state[index + width + 1]
         # South-west.
         if index + width - 1 < height * width:
-            if self.state[index + width - 1]:
-                neighbours += 1
+            neighbours += self.state[index + width - 1]
         # East.
         if index + 1 < height * width:
-            if self.state[index + 1]:
-                neighbours += 1
+            neighbours += self.state[index + 1]
         # West.
         if index - 1 >= 0:
-            if self.state[index - 1]:
-                neighbours += 1
+            neighbours += self.state[index - 1]
 
         return neighbours
 
