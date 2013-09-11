@@ -187,32 +187,11 @@ class Life(object):
         height = HEIGHT / CELL_SIZE
         neighbours = 0
 
-        x, y = (index / width), (index % width)  # Temporary crutch.
-
-        # North.
-        if index - width >= 0:
-            neighbours += self.state[index - width]
-        # North-east.
-        if index - width + 1 >= 0:
-            neighbours += self.state[index - width + 1]
-        # North-west.
-        if index - width - 1 >= 0:
-            neighbours += self.state[index - width - 1]
-        # South.
-        if index + width < height * width:
-            neighbours += self.state[index + width]
-        # South-east.
-        if index + width + 1 < height * width:
-            neighbours += self.state[index + width + 1]
-        # South-west.
-        if index + width - 1 < height * width:
-            neighbours += self.state[index + width - 1]
-        # East.
-        if index + 1 < height * width:
-            neighbours += self.state[index + 1]
-        # West.
-        if index - 1 >= 0:
-            neighbours += self.state[index - 1]
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                neighbour_index = index + (i * width) + j
+                if not (i == 0 and j == 0) and neighbour_index >= 0 and neighbour_index < len(self.state):
+                    neighbours += self.state[index + (i * width) + j]
 
         return neighbours
 
