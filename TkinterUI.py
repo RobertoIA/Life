@@ -117,6 +117,7 @@ class Top(object):
         """
         if self.board.automaton.get() == "life":
             self.state = self.life.game_of_life(self.state)
+            #self.life.random_activations(self.state)
         elif self.board.automaton.get() == "seeds":
             self.state = self.life.seeds(self.state)
         else:

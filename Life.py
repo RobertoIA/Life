@@ -1,3 +1,5 @@
+from random import randint
+
 class Life(object):
     """
     Manages game logic.
@@ -65,3 +67,7 @@ class Life(object):
                     neighbours += state[index + (i * self.width) + j]
 
         return neighbours
+
+    def random_activations(self, state):
+        for i in range(0, 20):
+            state[randint(0, (self.height * self.width)) - 1] = 1
