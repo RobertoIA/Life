@@ -4,9 +4,11 @@ from random import randint
 from Life import *
 
 # Width of the canvas, in pixels.
-WIDTH = 300
+WIDTH = 600
 # Height of the canvas, in pixels.
 HEIGHT = 300
+# Width of the buttons, in text units.
+BUTTON_WIDTH = 30
 # Size of each cells in pixels. Includes border (1px).
 CELL_SIZE = 3
 # Delay between 'ticks', in milliseconds.
@@ -37,14 +39,16 @@ class Board(Frame):
         self.automaton.set("pause")  # Default.
         # Conway's game of life button.
         self.life = Radiobutton(parent, text="Conway's game of life", variable=self.automaton, value="life",
-                                indicatoron=0)
-        self.life.grid(row=1, column=0, sticky=W + E)
+                                indicatoron=0, width=BUTTON_WIDTH)
+        self.life.grid(row=1, column=0)
         # Seeds button.
-        self.seeds = Radiobutton(parent, text="Seeds", variable=self.automaton, value="seeds", indicatoron=0)
-        self.seeds.grid(row=2, column=0, sticky=W + E)
+        self.seeds = Radiobutton(parent, text="Seeds", variable=self.automaton, value="seeds",
+                                indicatoron=0, width=BUTTON_WIDTH)
+        self.seeds.grid(row=2, column=0)
         # Pause button
-        self.seeds = Radiobutton(parent, text="Pause", variable=self.automaton, value="pause", indicatoron=0)
-        self.seeds.grid(row=4, column=0, sticky=W + E, pady=(12, 0))
+        self.seeds = Radiobutton(parent, text="Pause", variable=self.automaton, value="pause",
+                                indicatoron=0, width=BUTTON_WIDTH)
+        self.seeds.grid(row=4, column=0, pady=12)
 
     def init_cells(self):
         """
@@ -65,8 +69,8 @@ class Board(Frame):
                 status = HIDDEN
                 state.append(0)
 
-            cell = self.canvas.create_rectangle((index / width) * CELL_SIZE, (index % width) * CELL_SIZE,
-                                                ((index / width) + 1) * CELL_SIZE, ((index % width) + 1) * CELL_SIZE,
+            cell = self.canvas.create_rectangle((index % width) * CELL_SIZE, (index / width) * CELL_SIZE,
+                                                ((index % width) + 1) * CELL_SIZE, ((index / width) + 1) * CELL_SIZE,
                                                 fill="black", state=status, outline="white")
             self.cells.append(cell)
 

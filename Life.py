@@ -1,8 +1,11 @@
 from random import randint
 
+# Number of random cells per tick.
+RANDOM_CELLS = 20
+
 class Life(object):
     """
-    Manages game logic.
+    Calculates new state for any rules.
     """
 
     def __init__(self, width, height):
@@ -69,5 +72,8 @@ class Life(object):
         return neighbours
 
     def random_activations(self, state):
-        for i in range(0, 20):
+        """
+        Activates a number of cells in random positions.
+        """
+        for i in range(0, RANDOM_CELLS):
             state[randint(0, (self.height * self.width)) - 1] = 1
